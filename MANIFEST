@@ -3,4 +3,5 @@ MANIFEST			This list of files
 META.yml
 README
 result.pm
-testSynopsis.pl
+t/use.t
+testDemoCode.pl

@@ -12,6 +12,7 @@ WriteMakefile(
 							strict        => 0,
 							warnings      => 0,
 							Data::Dump    => 0,
+							Test::Easy    => 0,
 						},
     ($] >= 5.005 ? (
       ABSTRACT_FROM => 'result.pm', 

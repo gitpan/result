@@ -5,13 +5,13 @@
 #
 #
 #------------------------------------------------------
-# 2003/12/08 - $Date: 2003/12/11 11:06:04 $
+# 2003/12/08 - $Date: 2003/12/12 08:49:18 $
 # (C) Daniel Peder & Infoset s.r.o., all rights reserved
 # http://www.infoset.com, Daniel.Peder@infoset.com
 #------------------------------------------------------
-# $Revision: 1.14 $
-# $Date: 2003/12/11 11:06:04 $
-# $Id: result.pm_rev 1.14 2003/12/11 11:06:04 root Exp root $
+# $Revision: 1.15 $
+# $Date: 2003/12/12 08:49:18 $
+# $Id: result.pm_rev 1.15 2003/12/12 08:49:18 root Exp $
 
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- 
 
@@ -23,10 +23,10 @@ package result;
 
 	use vars qw( $VERSION $REVISION $REVISION_DATETIME );
 
-	$VERSION           = '1.1';
+	$VERSION           = '1.101';
 	
-	$REVISION          = ( qw$Revision: 1.14 $ )[1];
-	$REVISION_DATETIME = join(' ',( qw$Date: 2003/12/11 11:06:04 $ )[1,2]);
+	$REVISION          = ( qw$Revision: 1.15 $ )[1];
+	$REVISION_DATETIME = join(' ',( qw$Date: 2003/12/12 08:49:18 $ )[1,2]);
 
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- 
 #
@@ -306,7 +306,7 @@ none
 
 B<<  project started: 2003/12/08 >>
 
- $Id: result.pm_rev 1.14 2003/12/11 11:06:04 root Exp root $
+ $Id: result.pm_rev 1.15 2003/12/12 08:49:18 root Exp $
 
 
 =head1 AUTHOR
