@@ -11,6 +11,7 @@ WriteMakefile(
 	                    { # e.g., Module::Name => 1.1
 							strict        => 0,
 							warnings      => 0,
+							Data::Dump    => 0,
 						},
     ($] >= 5.005 ? (
       ABSTRACT_FROM => 'result.pm', 

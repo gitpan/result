@@ -1,9 +1,8 @@
 
-
   use result;
 
   # use result qw( messages=/etc/messages ); # intended to use i18l messages addressed by errKey ...
-
+  
   sub mySub1 { 
   
     my $param = shift;
@@ -30,25 +29,30 @@
 	}
   }
   
-  my $mighty_value;
+  my $val;
 
-  $mighty_value = mySub1();
-  print "\n---\n";
-  printf "%s\n", result::iserr($mighty_value)?$mighty_value->msg:$mighty_value;
-  print $mighty_value->dump."\n" if result::iserr( $mighty_value );
+  $val = mySub1(); 
+  if( result::iserr( $val )) { PrintErrReport( $val ) }
+  else                       { PrintOkReport( $val ) }
   
-  $mighty_value = mySub1( [1] );
-  print "\n---\n";
-  printf "%s\n", result::iserr($mighty_value)?$mighty_value->msg:$mighty_value;
-  print $mighty_value->dump."\n" if result::iserr( $mighty_value );
+  $val = mySub1( [1] );
+  if( result::iserr( $val )) { PrintErrReport( $val ) }
+  else                       { PrintOkReport( $val ) }
 
-  $mighty_value = mySub1( 'ok value' );
-  print "\n---\n";
-  printf "%s\n", result::iserr($mighty_value)?$mighty_value->msg:$mighty_value;
-  print $mighty_value->dump."\n" if result::iserr( $mighty_value );
+  $val = mySub1( 'ok value' );
+  if( result::iserr( $val )) { PrintErrReport( $val ) }
+  else                       { PrintOkReport( $val ) }
 
-  $mighty_value = mySub2_chain_test();
-  print "\n---\n";
-  printf "%s\n", result::iserr($mighty_value)?$mighty_value->msg:$mighty_value;
-  print $mighty_value->dump."\n" if result::iserr( $mighty_value );
-  
+  $val = mySub2_chain_test();
+  if( result::iserr( $val )) { PrintErrReport( $val ) }
+  else                       { PrintOkReport( $val ) }
+
+  sub PrintErrReport {
+  	my $val = shift;
+	print join( "\n", '---', $val->msg, $val->dump, '' );
+  }
+	
+  sub PrintOkReport {
+  	my $val = shift;
+	print "\n---\n non-err-result: ", $val, "\n";
+  }

@@ -5,13 +5,13 @@
 #
 #
 #------------------------------------------------------
-# 2003/12/08 - $Date: 2003/12/08 15:12:47 $
+# 2003/12/08 - $Date: 2003/12/08 16:27:33 $
 # (C) Daniel Peder & Infoset s.r.o., all rights reserved
 # http://www.infoset.com, Daniel.Peder@infoset.com
 #------------------------------------------------------
-# $Revision: 1.6 $
-# $Date: 2003/12/08 15:12:47 $
-# $Id: result.pm_rev 1.6 2003/12/08 15:12:47 root Exp root $
+# $Revision: 1.7 $
+# $Date: 2003/12/08 16:27:33 $
+# $Id: result.pm_rev 1.7 2003/12/08 16:27:33 root Exp root $
 
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- 
 
@@ -22,10 +22,10 @@ package result;
 
 	use vars qw( $VERSION $REVISION $REVISION_DATETIME );
 
-	$VERSION           = '0.01';
+	$VERSION           = '1.00';
 	
-	$REVISION          = (qw$Revision: 1.6 $)[1];
-	$REVISION_DATETIME = join(' ',(qw$Date: 2003/12/08 15:12:47 $)[1,2]);
+	$REVISION          = ( qw$Revision: 1.7 $ )[1];
+	$REVISION_DATETIME = join(' ',( qw$Date: 2003/12/08 16:27:33 $ )[1,2]);
 
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- 
 #
@@ -35,14 +35,14 @@ package result;
 
 =head1 NAME
 
-result - simple but powerfull error handlig support
+result - simple but powerfull error handling support
 
 =head1 SYNOPSIS
 
   use result;
 
   # use result qw( messages=/etc/messages ); # intended to use i18l messages addressed by errKey ...
-
+  
   sub mySub1 { 
   
     my $param = shift;
@@ -69,27 +69,34 @@ result - simple but powerfull error handlig support
 	}
   }
   
-  my $mighty_value;
+  my $val;
 
-  $mighty_value = mySub1();
-  print "\n---\n";
-  printf "%s\n", result::iserr($mighty_value)?$mighty_value->msg:$mighty_value;
-  print $mighty_value->dump."\n" if result::iserr( $mighty_value );
+  $val = mySub1(); 
+  if( result::iserr( $val )) { PrintErrReport( $val ) }
+  else                       { PrintOkReport( $val ) }
   
-  $mighty_value = mySub1( [1] );
-  print "\n---\n";
-  printf "%s\n", result::iserr($mighty_value)?$mighty_value->msg:$mighty_value;
-  print $mighty_value->dump."\n" if result::iserr( $mighty_value );
+  $val = mySub1( [1] );
+  if( result::iserr( $val )) { PrintErrReport( $val ) }
+  else                       { PrintOkReport( $val ) }
 
-  $mighty_value = mySub1( 'ok value' );
-  print "\n---\n";
-  printf "%s\n", result::iserr($mighty_value)?$mighty_value->msg:$mighty_value;
-  print $mighty_value->dump."\n" if result::iserr( $mighty_value );
+  $val = mySub1( 'ok value' );
+  if( result::iserr( $val )) { PrintErrReport( $val ) }
+  else                       { PrintOkReport( $val ) }
 
-  $mighty_value = mySub2_chain_test();
-  print "\n---\n";
-  printf "%s\n", result::iserr($mighty_value)?$mighty_value->msg:$mighty_value;
-  print $mighty_value->dump."\n" if result::iserr( $mighty_value );
+  $val = mySub2_chain_test();
+  if( result::iserr( $val )) { PrintErrReport( $val ) }
+  else                       { PrintOkReport( $val ) }
+
+  sub PrintErrReport {
+  	my $val = shift;
+	print join( "\n", '---', $val->msg, $val->dump, '' );
+  }
+	
+  sub PrintOkReport {
+  	my $val = shift;
+	print "\n---\n non-err-result: ", $val, "\n";
+  }
+  
   
   
 =head1 DESCRIPTION
@@ -252,7 +259,7 @@ none
 
 B<<  project started: 2003/05/09 >>
 
- $Id: result.pm_rev 1.6 2003/12/08 15:12:47 root Exp root $
+ $Id: result.pm_rev 1.7 2003/12/08 16:27:33 root Exp root $
 
 
 =head1 AUTHOR
