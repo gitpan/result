@@ -1,17 +1,17 @@
+  use result qw( :ERR );
 
-  use result;
-
-  # use result qw( messages=/etc/messages ); # intended to use i18l messages addressed by errKey ...
-  
   sub mySub1 { 
   
     my $param = shift;
 
 	unless( defined( $param ))
-    { return result::err( errAsSimpleMsg => 'undefined parameter' ) }
+    { return err errAsSimpleMsg => 'undefined parameter' }
 	
 	if( ref( $param ))
-	{ return result::err( errAsFormatMsg => ['parameter as reference "%s"', ref($param) ] ) }
+	{ return err errAsFormatMsg => ['parameter is "%s" reference', ref($param) ] }
+
+	if( $param eq 'force-err' )
+	{ return err 'As Standalone Key or Message' }
 	
 	return $param;
 	
@@ -19,7 +19,7 @@
   
   sub mySub2_chain_test {
     my $rv = mySub1();
-	if( result::iserr($rv) )
+	if( iserr($rv) )
 	{
 	  return $rv->errChain( errBubbled => 'use dump to see error history' ) ;
 	}
@@ -32,20 +32,24 @@
   my $val;
 
   $val = mySub1(); 
-  if( result::iserr( $val )) { PrintErrReport( $val ) }
-  else                       { PrintOkReport( $val ) }
+  if( iserr( $val )) { PrintErrReport( $val ) }
+  else               { PrintOkReport( $val ) }
   
-  $val = mySub1( [1] );
-  if( result::iserr( $val )) { PrintErrReport( $val ) }
-  else                       { PrintOkReport( $val ) }
+  $val = mySub1( ['force-err'] );
+  if( iserr( $val )) { PrintErrReport( $val ) }
+  else               { PrintOkReport( $val ) }
+
+  $val = mySub1( 'force-err' );
+  if( iserr( $val )) { PrintErrReport( $val ) }
+  else               { PrintOkReport( $val ) }
 
   $val = mySub1( 'ok value' );
-  if( result::iserr( $val )) { PrintErrReport( $val ) }
-  else                       { PrintOkReport( $val ) }
+  if( iserr( $val )) { PrintErrReport( $val ) }
+  else               { PrintOkReport( $val ) }
 
   $val = mySub2_chain_test();
-  if( result::iserr( $val )) { PrintErrReport( $val ) }
-  else                       { PrintOkReport( $val ) }
+  if( iserr( $val )) { PrintErrReport( $val ) }
+  else               { PrintOkReport( $val ) }
 
   sub PrintErrReport {
   	my $val = shift;

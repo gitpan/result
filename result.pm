@@ -1,19 +1,20 @@
 #------------------------------------------------------
 #
 #
-#      result
+#      result - simple and powerfull error handling
 #
 #
 #------------------------------------------------------
-# 2003/12/08 - $Date: 2003/12/08 16:27:33 $
+# 2003/12/08 - $Date: 2003/12/11 11:06:04 $
 # (C) Daniel Peder & Infoset s.r.o., all rights reserved
 # http://www.infoset.com, Daniel.Peder@infoset.com
 #------------------------------------------------------
-# $Revision: 1.7 $
-# $Date: 2003/12/08 16:27:33 $
-# $Id: result.pm_rev 1.7 2003/12/08 16:27:33 root Exp root $
+# $Revision: 1.14 $
+# $Date: 2003/12/11 11:06:04 $
+# $Id: result.pm_rev 1.14 2003/12/11 11:06:04 root Exp root $
 
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- 
+
 
 package result;
 
@@ -22,10 +23,10 @@ package result;
 
 	use vars qw( $VERSION $REVISION $REVISION_DATETIME );
 
-	$VERSION           = '1.00';
+	$VERSION           = '1.1';
 	
-	$REVISION          = ( qw$Revision: 1.7 $ )[1];
-	$REVISION_DATETIME = join(' ',( qw$Date: 2003/12/08 16:27:33 $ )[1,2]);
+	$REVISION          = ( qw$Revision: 1.14 $ )[1];
+	$REVISION_DATETIME = join(' ',( qw$Date: 2003/12/11 11:06:04 $ )[1,2]);
 
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- 
 #
@@ -35,23 +36,41 @@ package result;
 
 =head1 NAME
 
-result - simple but powerfull error handling support
+result - simple and powerfull error handling support
 
 =head1 SYNOPSIS
 
-  use result;
-
-  # use result qw( messages=/etc/messages ); # intended to use i18l messages addressed by errKey ...
+  use result qw(:ERR);
   
+  ...
+  sub mySub {
+    ...
+	return err 'some err message' if errorDetectedUsingAnyCustomWay();
+	... continue
+	return 'the value that should be returned normal way';
+  }
+  ...
+  my $ResultValue_or_ErrObject = mySub;
+  doSomethingProbablyDie() if iserr $ResultValue_or_ErrObject;
+  
+see also B<DEMO CODE> which is the fully functional demo example.
+
+=head1 DEMO CODE
+
+  use result qw(:ERR);
+
   sub mySub1 { 
   
     my $param = shift;
 
 	unless( defined( $param ))
-    { return result::err( errAsSimpleMsg => 'undefined parameter' ) }
+    { return err errAsSimpleMsg => 'undefined parameter' }
 	
 	if( ref( $param ))
-	{ return result::err( errAsFormatMsg => ['parameter as reference "%s"', ref($param) ] ) }
+	{ return err errAsFormatMsg => ['parameter is "%s" reference', ref($param) ] }
+
+	if( $param eq 'force-err' )
+	{ return err 'As Standalone Key or Message' }
 	
 	return $param;
 	
@@ -59,7 +78,7 @@ result - simple but powerfull error handling support
   
   sub mySub2_chain_test {
     my $rv = mySub1();
-	if( result::iserr($rv) )
+	if( iserr($rv) )
 	{
 	  return $rv->errChain( errBubbled => 'use dump to see error history' ) ;
 	}
@@ -72,20 +91,24 @@ result - simple but powerfull error handling support
   my $val;
 
   $val = mySub1(); 
-  if( result::iserr( $val )) { PrintErrReport( $val ) }
-  else                       { PrintOkReport( $val ) }
+  if( iserr( $val )) { PrintErrReport( $val ) }
+  else               { PrintOkReport( $val ) }
   
-  $val = mySub1( [1] );
-  if( result::iserr( $val )) { PrintErrReport( $val ) }
-  else                       { PrintOkReport( $val ) }
+  $val = mySub1( ['force-err'] );
+  if( iserr( $val )) { PrintErrReport( $val ) }
+  else               { PrintOkReport( $val ) }
+
+  $val = mySub1( 'force-err' );
+  if( iserr( $val )) { PrintErrReport( $val ) }
+  else               { PrintOkReport( $val ) }
 
   $val = mySub1( 'ok value' );
-  if( result::iserr( $val )) { PrintErrReport( $val ) }
-  else                       { PrintOkReport( $val ) }
+  if( iserr( $val )) { PrintErrReport( $val ) }
+  else               { PrintOkReport( $val ) }
 
   $val = mySub2_chain_test();
-  if( result::iserr( $val )) { PrintErrReport( $val ) }
-  else                       { PrintOkReport( $val ) }
+  if( iserr( $val )) { PrintErrReport( $val ) }
+  else               { PrintOkReport( $val ) }
 
   sub PrintErrReport {
   	my $val = shift;
@@ -97,14 +120,16 @@ result - simple but powerfull error handling support
 	print "\n---\n non-err-result: ", $val, "\n";
   }
   
-  
-  
 =head1 DESCRIPTION
 
 
 =head2 EXPORT
 
-nothing
+B<by default :> none
+
+B<by tag ':ERR' :> err, iserr
+
+B<by tag ':ALL' :> err, iserr
 
 =cut
 
@@ -121,6 +146,24 @@ nothing
 	use Data::Dump        ();
 	
 
+# --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- 
+
+
+	use vars qw( @EXPORT @EXPORT_OK %EXPORT_TAGS @ISA );
+
+    require Exporter;
+	@ISA = qw(Exporter);
+	
+	%EXPORT_TAGS = ( 
+		'ALL'  => [qw( &err &iserr )],
+		'ERR'  => [qw( &err &iserr )],
+	);
+	@EXPORT_OK = @{$EXPORT_TAGS{'ALL'}};
+
+
+# --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- 
+
+
 =head1 METHODS
 
 =over 4
@@ -128,15 +171,15 @@ nothing
 =cut
 
 
-=item err (class method)
+=item err (class method, exported)
 
-  $ResultValue_or_ErrObject = result::err( errKey => \@errParameters )
+  $ResultValue_or_ErrObject = result::err( errKey [ => \@errParameters ] )
 
-Returns the detectable error object. See SYNOPSIS.
+Returns the detectable error blessed object. See SYNOPSIS.
 
 =cut
 	
-sub err
+sub err ($;$)
 {
 	my(		$key, $param		)=@_;
 	
@@ -185,7 +228,7 @@ sub errChain
 
 
 
-=item iserr (class method)
+=item iserr (class method, exported)
 
   $bool = result::iserr( $ResultValue_or_ErrObject )
 
@@ -193,10 +236,14 @@ Returns true if the B<< $ResultValue_or_ErrObject >> contains ErrorObject. See S
 
 =cut
 	
-sub iserr
+sub iserr 
 {
 	my(		$obj		)=@_;
-	ref( $obj ) eq __PACKAGE__ && $obj->{'type'} eq 'ERROR';
+	return
+		defined($obj) 
+		&& (ref($obj) eq __PACKAGE__) 
+		&& ($obj->{'type'} eq 'ERROR')
+	;
 }
 
 
@@ -220,8 +267,8 @@ sub msg
 	
 	my $msg          = $self->{'stack'}->[0];
 	my $key          = $msg->[0];
-	my $param        = (ref($msg->[1]) eq 'ARRAY')?[@{$msg->[1]}]:[$msg->[1]];
-	my $format       = $#$param>0 ? shift(@$param):'%s';
+	my $param        = (ref($msg->[1]) eq 'ARRAY') ? [@{$msg->[1]}] : [$msg->[1]];
+	my $format       = @$param>1 ? shift(@$param) : defined($param->[0]) ? '%s' : '' ;
 	$format          = sprintf 'ERR[%s] %s', $key, $format;
 	
 	return sprintf( $format, @$param );
@@ -231,8 +278,8 @@ sub msg
 
   $string = $ResultValue_or_ErrObject->dump
 
-Denerates complete dump using Data::Dump. See SYNOPSIS.
-Intended for further diagnostical use by bubbling/stacking errors.
+Dumps the whole object using Data::Dump. See SYNOPSIS.
+Intended for further diagnostical use with bubbling/stacking errors.
 
 =cut
 	
@@ -257,9 +304,9 @@ none
 
 =head1 REVISION
 
-B<<  project started: 2003/05/09 >>
+B<<  project started: 2003/12/08 >>
 
- $Id: result.pm_rev 1.7 2003/12/08 16:27:33 root Exp root $
+ $Id: result.pm_rev 1.14 2003/12/11 11:06:04 root Exp root $
 
 
 =head1 AUTHOR
@@ -274,7 +321,7 @@ B<<  project started: 2003/05/09 >>
 
 =head1 SEE ALSO
 
-L<< Class::ReturnValue >>
+Class::ReturnValue
 	
 =cut
 

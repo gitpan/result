@@ -1,22 +1,40 @@
 NAME
 
-    result - simple but powerfull error handling support
+    result - simple and powerfull error handling support
 
 SYNOPSIS
 
-      use result;
-
-      # use result qw( messages=/etc/messages ); # intended to use i18l messages addressed by errKey ...
+      use result qw(:ERR);
   
+      ...
+      sub mySub {
+        ...
+            return err 'some err message' if errorDetectedUsingAnyCustomWay();
+            ... continue
+            return 'the value that should be returned normal way';
+      }
+      ...
+      my $ResultValue_or_ErrObject = mySub;
+      doSomethingProbablyDie() if iserr $ResultValue_or_ErrObject;
+  
+    see also DEMO CODE which is the fully functional demo example.
+
+DEMO CODE
+
+      use result qw(:ERR);
+
       sub mySub1 { 
   
         my $param = shift;
 
             unless( defined( $param ))
-        { return result::err( errAsSimpleMsg => 'undefined parameter' ) }
+        { return err errAsSimpleMsg => 'undefined parameter' }
         
             if( ref( $param ))
-            { return result::err( errAsFormatMsg => ['parameter as reference "%s"', ref($param) ] ) }
+            { return err errAsFormatMsg => ['parameter is "%s" reference', ref($param) ] }
+
+            if( $param eq 'force-err' )
+            { return err 'As Standalone Key or Message' }
         
             return $param;
         
@@ -24,7 +42,7 @@ SYNOPSIS
   
       sub mySub2_chain_test {
         my $rv = mySub1();
-            if( result::iserr($rv) )
+            if( iserr($rv) )
             {
               return $rv->errChain( errBubbled => 'use dump to see error history' ) ;
             }
@@ -37,20 +55,24 @@ SYNOPSIS
       my $val;
 
       $val = mySub1(); 
-      if( result::iserr( $val )) { PrintErrReport( $val ) }
-      else                       { PrintOkReport( $val ) }
+      if( iserr( $val )) { PrintErrReport( $val ) }
+      else               { PrintOkReport( $val ) }
   
-      $val = mySub1( [1] );
-      if( result::iserr( $val )) { PrintErrReport( $val ) }
-      else                       { PrintOkReport( $val ) }
+      $val = mySub1( ['force-err'] );
+      if( iserr( $val )) { PrintErrReport( $val ) }
+      else               { PrintOkReport( $val ) }
+
+      $val = mySub1( 'force-err' );
+      if( iserr( $val )) { PrintErrReport( $val ) }
+      else               { PrintOkReport( $val ) }
 
       $val = mySub1( 'ok value' );
-      if( result::iserr( $val )) { PrintErrReport( $val ) }
-      else                       { PrintOkReport( $val ) }
+      if( iserr( $val )) { PrintErrReport( $val ) }
+      else               { PrintOkReport( $val ) }
 
       $val = mySub2_chain_test();
-      if( result::iserr( $val )) { PrintErrReport( $val ) }
-      else                       { PrintOkReport( $val ) }
+      if( iserr( $val )) { PrintErrReport( $val ) }
+      else               { PrintOkReport( $val ) }
 
       sub PrintErrReport {
             my $val = shift;
@@ -66,14 +88,18 @@ DESCRIPTION
 
   EXPORT
 
-    nothing
+    by default : none
+
+    by tag ':ERR' : err, iserr
+
+    by tag ':ALL' : err, iserr
 
 METHODS
 
-    err (class method)
-          $ResultValue_or_ErrObject = result::err( errKey => \@errParameters )
+    err (class method, exported)
+          $ResultValue_or_ErrObject = result::err( errKey [ => \@errParameters ] )
 
-        Returns the detectable error object. See SYNOPSIS.
+        Returns the detectable error blessed object. See SYNOPSIS.
 
     errChain (object method)
           $ResultValue_or_ErrObject = $ResultValue_or_ErrObject->errChain( errKey => \@errParameters )
@@ -84,7 +110,7 @@ METHODS
 
         It could be understand as error history or as err stack.
 
-    iserr (class method)
+    iserr (class method, exported)
           $bool = result::iserr( $ResultValue_or_ErrObject )
 
         Returns true if the $ResultValue_or_ErrObject contains ErrorObject.
@@ -98,8 +124,8 @@ METHODS
     dump (object method)
           $string = $ResultValue_or_ErrObject->dump
 
-        Denerates complete dump using Data::Dump. See SYNOPSIS. Intended for
-        further diagnostical use by bubbling/stacking errors.
+        Dumps the whole object using Data::Dump. See SYNOPSIS. Intended for
+        further diagnostical use with bubbling/stacking errors.
 
 FILES
 
@@ -107,9 +133,9 @@ FILES
 
 REVISION
 
-     project started: 2003/05/09
+     project started: 2003/12/08
 
-     $Id: result.pm_rev 1.7 2003/12/08 16:27:33 root Exp root $
+     $Id: result.pm_rev 1.14 2003/12/11 11:06:04 root Exp root $
 
 AUTHOR
 
